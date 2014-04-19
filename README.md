@@ -11,8 +11,12 @@ Prerequisite
 
 Functions available
 =====
+
+New Function bdib is available!
+
 * bdh(tickers, field list, start date, end date, periodselection) - similar interface with Bloomberg Excel API's bdh fucntion
+* bdib(ticker, field list, start date and time, end date and time, evnet type, interval) - get intraday bar data and convert to pandas
 
 Examples in IPython Notebook
 =====
-* [bdh](http://nbviewer.ipython.org/github/kyuni22/pybbg/blob/master/BBG_API_test.ipynb?create=1)
+* [bdh and bdib](http://nbviewer.ipython.org/github/kyuni22/pybbg/blob/master/BBG_API_test.ipynb?create=1)
