@@ -85,5 +85,42 @@ class pybbg():
         data.columns = pd.MultiIndex.from_tuples(data, names=['ticker', 'field'])
         data.index = pd.to_datetime(data.index)
         return data
+
+    def bdib(self, ticker, fld_list, startDateTime, endDateTime, eventType='TRADE', interval = 1):
+        """
+        Get one ticker (Only one ticker available per call); eventType (TRADE, BID, ASK,..etc); interval (in minutes)
+                ; fld_list (Only [open, high, low, close, volumne, numEvents] availalbe)
+        return pandas dataframe with return Data
+        """
+        # Create and fill the request for the historical data
+        request = self.refDataService.createRequest("IntradayBarRequest")
+        request.set("security", ticker)
+        request.set("eventType", eventType)
+        request.set("interval", interval)  # bar interval in minutes        
+        request.set("startDateTime", startDateTime)
+        request.set("endDateTime", endDateTime)
+        
+        print "Sending Request:", request
+        # Send the request
+        self.session.sendRequest(request)
+        # defaultdict - later convert to pandas
+        data = defaultdict(dict)
+        # Process received events
+        while(True):
+            # We provide timeout to give the chance for Ctrl+C handling:
+            ev = self.session.nextEvent(500)
+            for msg in ev:
+                barTickData = msg.getElement('barData').getElement('barTickData')
+                for i in range(barTickData.numValues()) :
+                    for j in range(len(fld_list)) :
+                        data[(fld_list[j])][barTickData.getValue(i).getElement(0).getValue()] = barTickData.getValue(i).getElement(fld_list[j]).getValue()
+        
+            if ev.eventType() == blpapi.Event.RESPONSE:
+                # Response completly received, so we could exit
+                break
+        data = DataFrame(data)
+        data.index = pd.to_datetime(data.index)
+        return data
+        
     def stop(self):
         self.session.stop()
