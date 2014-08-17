@@ -11,7 +11,7 @@ from pandas import DataFrame
 from datetime import datetime, date, time
 import pandas as pd
 
-class pybbg():
+class Pybbg():
     def __init__(self, host='localhost', port=8194):
         """
         Starting bloomberg API session
