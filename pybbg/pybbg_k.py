@@ -27,7 +27,7 @@ class Pybbg():
     
         # Start a Session
         if not self.session.start():
-            print "Failed to start session."
+            print("Failed to start session.")
         
         self.session.nextEvent()
         
@@ -37,7 +37,7 @@ class Pybbg():
         """
         # Open service to get historical data from
         if not self.session.openService("//blp/refdata"):
-            print "Failed to open //blp/refdata"
+            print("Failed to open //blp/refdata")
         
         self.session.nextEvent()
         
@@ -62,7 +62,7 @@ class Pybbg():
         request.set("startDate", start_date)
         request.set("endDate", end_date)
         
-        print "Sending Request:", request
+        #print("Sending Request:", request)
         # Send the request
         self.session.sendRequest(request)
         # defaultdict - later convert to pandas
@@ -100,7 +100,7 @@ class Pybbg():
         request.set("startDateTime", startDateTime)
         request.set("endDateTime", endDateTime)
         
-        print "Sending Request:", request
+        #print "Sending Request:", request
         # Send the request
         self.session.sendRequest(request)
         # defaultdict - later convert to pandas
