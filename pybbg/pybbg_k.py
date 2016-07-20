@@ -5,11 +5,13 @@ Created on Thu Jan 30 13:47:12 2014
 @author: kian
 """
 
+from __future__ import print_function
 import blpapi
 from collections import defaultdict
 from pandas import DataFrame
 from datetime import datetime, date, time
 import pandas as pd
+import sys
 
 class Pybbg():
     def __init__(self, host='localhost', port=8194):
@@ -19,9 +21,11 @@ class Pybbg():
         """
         # Fill SessionOptions
         sessionOptions = blpapi.SessionOptions()
-        sessionOptions.setServerHost('localhost')
-        sessionOptions.setServerPort(8194)
-    
+        sessionOptions.setServerHost(host)
+        sessionOptions.setServerPort(port)
+
+        self.initialized_services = set()
+
         # Create a Session
         self.session = blpapi.Session(sessionOptions)
     
@@ -35,7 +39,10 @@ class Pybbg():
         """
         init service for refData
         """
-        # Open service to get historical data from
+        if '//blp/refdata' in self.initialized_services:
+            return
+
+
         if not self.session.openService("//blp/refdata"):
             print("Failed to open //blp/refdata")
         
@@ -45,6 +52,8 @@ class Pybbg():
         self.refDataService = self.session.getService("//blp/refdata")
         
         self.session.nextEvent() 
+
+        self.initialized_services.add('//blp/refdata') 
     
     def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection = 'DAILY'):
         """
@@ -52,6 +61,8 @@ class Pybbg():
         return pandas multi level columns dataframe
         """
         # Create and fill the request for the historical data
+        self.service_refData()
+
         request = self.refDataService.createRequest("HistoricalDataRequest")
         for t in ticker_list:
             request.getElement("securities").appendValue(t)       
@@ -92,6 +103,7 @@ class Pybbg():
                 ; fld_list (Only [open, high, low, close, volumne, numEvents] availalbe)
         return pandas dataframe with return Data
         """
+        self.service_refData()
         # Create and fill the request for the historical data
         request = self.refDataService.createRequest("IntradayBarRequest")
         request.set("security", ticker)
@@ -121,6 +133,57 @@ class Pybbg():
         data = DataFrame(data)
         data.index = pd.to_datetime(data.index)
         return data
+
+    def bdp(self, ticker, fld_list):
+
+        self.service_refData()
+        
+        request = self.refDataService.createRequest("ReferenceDataRequest")
+        if isstring(ticker):
+            ticker = [ ticker ]
+
+        securities = request.getElement("securities")
+        for t in ticker:
+            securities.appendValue(t)
+        
+        if isstring(fld_list):
+            fld_list = [ fld_list ]
+
+        fields = request.getElement("fields")
+        for f in fld_list:
+            fields.appendValue(f)
+        
+
+        self.session.sendRequest(request)
+        data = dict()
+
+        while(True):
+            # We provide timeout to give the chance for Ctrl+C handling:
+            ev = self.session.nextEvent(500)
+            for msg in ev:
+                securityData = msg.getElement("securityData")
+
+                for i in range(securityData.numValues()):
+                    fieldData = securityData.getValue(i).getElement("fieldData")
+                    secId = securityData.getValue(i).getElement("security").getValue()
+                    data[secId] = dict()
+                    for field in fld_list:
+                        data[secId][field] = fieldData.getElement(field).getValue()
+
+        
+            if ev.eventType() == blpapi.Event.RESPONSE:
+                # Response completly received, so we could exit
+                break
+
+        return pd.DataFrame.from_dict(data)
+
         
     def stop(self):
         self.session.stop()
+
+def isstring(s):
+    # if we use Python 3
+    if (sys.version_info[0] == 3):
+        return isinstance(s, str)
+    # we use Python 2
+    return isinstance(s, basestring)
