@@ -3,6 +3,7 @@ pybbg
 
 python interface to Bloomberg data for pandas user
 
+
 Prerequisite
 =====
 
@@ -16,6 +17,18 @@ New Function bdib is available!
 
 * bdh(tickers, field list, start date, end date, periodselection) - similar interface with Bloomberg Excel API's bdh fucntion
 * bdib(ticker, field list, start date and time, end date and time, evnet type, interval) - get intraday bar data and convert to pandas
+
+
+Install via pip
+=====
+
+This package is not yet on pypi manual global install is as follows:
+
+
+    git clone https://github.com/kyuni22/pybbg --depth=1
+    pip install pybbg
+
+
 
 Examples in IPython Notebook
 =====
