@@ -25,8 +25,7 @@ Install via pip
 This package is not yet on pypi manual global install is as follows:
 
 
-    git clone https://github.com/kyuni22/pybbg --depth=1
-    pip install pybbg
+    pip install git+https://github.com/kyuni22/pybbg 
 
 
 
