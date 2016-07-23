@@ -12,6 +12,7 @@ from pandas import DataFrame
 from datetime import datetime, date, time
 import pandas as pd
 import sys
+from pprint import pprint
 
 class Pybbg():
     def __init__(self, host='localhost', port=8194):
@@ -63,6 +64,16 @@ class Pybbg():
         # Create and fill the request for the historical data
         self.service_refData()
 
+        if isstring(ticker_list):
+            ticker_list = [ ticker_list ]
+        if isstring(fld_list):
+            fld_list = [ fld_list ] 
+
+        if hasattr(start_date, 'strftime'):
+            start_date = start_date.strftime('%Y%m%d')
+        if hasattr(end_date, 'strftime'):
+            end_date = end_date.strftime('%Y%m%d')
+
         request = self.refDataService.createRequest("HistoricalDataRequest")
         for t in ticker_list:
             request.getElement("securities").appendValue(t)       
@@ -92,6 +103,13 @@ class Pybbg():
             if ev.eventType() == blpapi.Event.RESPONSE:
                 # Response completly received, so we could exit
                 break
+
+        if len(fld_list) == 1:
+            data = { k[0] : v for k,v in data.items() }
+            data = DataFrame(data)
+            #data.index = pd.to_datetime(data.index)
+            return data
+
         data = DataFrame(data)
         data.columns = pd.MultiIndex.from_tuples(data, names=['ticker', 'field'])
         data.index = pd.to_datetime(data.index)
@@ -161,6 +179,7 @@ class Pybbg():
             # We provide timeout to give the chance for Ctrl+C handling:
             ev = self.session.nextEvent(500)
             for msg in ev:
+                print(msg)
                 securityData = msg.getElement("securityData")
 
                 for i in range(securityData.numValues()):
@@ -177,6 +196,49 @@ class Pybbg():
 
         return pd.DataFrame.from_dict(data)
 
+
+    def bds(self, security, field):
+
+        self.service_refData()
+        
+        request = self.refDataService.createRequest("ReferenceDataRequest")
+        assert isstring(security)
+        assert isstring(field)
+
+
+        securities = request.getElement("securities")
+        securities.appendValue(security)
+        
+        fields = request.getElement("fields")
+        fields.appendValue(field)
+        
+        self.session.sendRequest(request)
+        data = dict()
+
+        while(True):
+            # We provide timeout to give the chance for Ctrl+C handling:
+            ev = self.session.nextEvent(500)
+            for msg in ev:
+                # processMessage(msg)
+                securityData = msg.getElement("securityData")
+                for i in range(securityData.numValues()):
+                    fieldData = securityData.getValue(i).getElement("fieldData").getElement(field)
+                    for i, row in enumerate(fieldData.values()):
+                        for j in range(row.numElements()):
+                            e = row.getElement(j)
+                            k = e.name()
+                            v = e.getValue()
+                            if k not in data:
+                                data[k] = list()
+
+                            data[k].append(v)
+
+        
+            if ev.eventType() == blpapi.Event.RESPONSE:
+                # Response completly received, so we could exit
+                break
+
+        return pd.DataFrame.from_dict(data)
         
     def stop(self):
         self.session.stop()
@@ -187,3 +249,23 @@ def isstring(s):
         return isinstance(s, str)
     # we use Python 2
     return isinstance(s, basestring)
+
+
+
+def processMessage(msg):
+    SECURITY_DATA = blpapi.Name("securityData")
+    SECURITY = blpapi.Name("security")
+    FIELD_DATA = blpapi.Name("fieldData")
+    FIELD_EXCEPTIONS = blpapi.Name("fieldExceptions")
+    FIELD_ID = blpapi.Name("fieldId")
+    ERROR_INFO = blpapi.Name("errorInfo")
+
+    securityDataArray = msg.getElement(SECURITY_DATA)
+    for securityData in securityDataArray.values():
+        print(securityData.getElementAsString(SECURITY))
+        fieldData = securityData.getElement(FIELD_DATA)
+        for field in fieldData.elements():
+            for i, row in enumerate(field.values()):
+                for j in range(row.numElements()):
+                    e = row.getElement(j)
+                    print("Row %d col %d: %s %s" % (i, j, e.name(), e.getValue()))
