@@ -179,7 +179,6 @@ class Pybbg():
             # We provide timeout to give the chance for Ctrl+C handling:
             ev = self.session.nextEvent(500)
             for msg in ev:
-                print(msg)
                 securityData = msg.getElement("securityData")
 
                 for i in range(securityData.numValues()):
