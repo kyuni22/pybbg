@@ -11,6 +11,7 @@ from collections import defaultdict
 from pandas import DataFrame
 from datetime import datetime, date, time
 import pandas as pd
+import numpy as np
 import sys
 from pprint import pprint
 
@@ -110,6 +111,10 @@ class Pybbg():
             #data.index = pd.to_datetime(data.index)
             return data
 
+        if len(data) == 0:
+            # security error case
+            return DataFrame()
+
         data = DataFrame(data)
         data.columns = pd.MultiIndex.from_tuples(data, names=['ticker', 'field'])
         data.index = pd.to_datetime(data.index)
@@ -186,7 +191,11 @@ class Pybbg():
                     secId = securityData.getValue(i).getElement("security").getValue()
                     data[secId] = dict()
                     for field in fld_list:
-                        data[secId][field] = fieldData.getElement(field).getValue()
+                        if fieldData.hasElement(field):
+                            data[secId][field] = fieldData.getElement(field).getValue()
+                        else:
+                            data[secId][field] = np.NaN
+                        
 
         
             if ev.eventType() == blpapi.Event.RESPONSE:
