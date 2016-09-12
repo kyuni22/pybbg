@@ -32,6 +32,7 @@ class TestPybbg(unittest.TestCase):
 
     def test_default_session_pool(self):
         with pybbg.acquire_session() as session: # access the session pool, this acquires a session from the pool and blocks
+            assert session is not None
             assert not pybbg.pybbg_k._SESSION_POOL._session_pool.full()
 
         assert pybbg.pybbg_k._SESSION_POOL._session_pool.full()
@@ -39,6 +40,7 @@ class TestPybbg(unittest.TestCase):
     def test_custom_session_pool(self):
         pool = pybbg.SessionPool(8)
         with pool.acquire_session() as session:
+            assert session is not None
             assert not pool._session_pool.full()
 
         assert pool._session_pool.full()
