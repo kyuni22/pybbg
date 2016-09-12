@@ -5,4 +5,6 @@ Created on Sun Aug 17 16:10:53 2014
 @author: kian
 """
 
-from .pybbg_k import Pybbg
+# re-export select things 
+from .pybbg_k import Pybbg, SessionPool, acquire_session
+

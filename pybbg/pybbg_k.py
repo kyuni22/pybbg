@@ -13,6 +13,10 @@ from datetime import datetime, date, time
 import pandas as pd
 import sys
 from pprint import pprint
+import queue
+import os
+import multiprocessing
+import contextlib
 
 class Pybbg():
     def __init__(self, host='localhost', port=8194):
@@ -218,7 +222,6 @@ class Pybbg():
             # We provide timeout to give the chance for Ctrl+C handling:
             ev = self.session.nextEvent(500)
             for msg in ev:
-                # processMessage(msg)
                 securityData = msg.getElement("securityData")
                 for i in range(securityData.numValues()):
                     fieldData = securityData.getValue(i).getElement("fieldData").getElement(field)
@@ -242,29 +245,40 @@ class Pybbg():
     def stop(self):
         self.session.stop()
 
+class SessionPool():
+    def __init__(self, num_sessions):
+        self._session_pool = queue.Queue(num_sessions)
+        for i in range(num_sessions):
+            self._session_pool.put(Pybbg())
+
+    def get_session(self):
+        self._session_pool.get()
+
+    def put_session(self, session):
+        self._session_pool.put(session)
+
+    @property
+    def acquire_session(self):
+
+        @contextlib.contextmanager
+        def _acquire_session():
+            session = self.get_session()
+            yield session
+            self.put_session(session)
+
+        return _acquire_session
+    
+
+
+_MAX_BB_SESSIONS = os.environ.get('PYBBG_MAX_SESSIONS', multiprocessing.cpu_count())
+_SESSION_POOL = SessionPool(_MAX_BB_SESSIONS)
+acquire_session = _SESSION_POOL.acquire_session
+
+
+
 def isstring(s):
     # if we use Python 3
     if (sys.version_info[0] == 3):
         return isinstance(s, str)
     # we use Python 2
     return isinstance(s, basestring)
-
-
-
-def processMessage(msg):
-    SECURITY_DATA = blpapi.Name("securityData")
-    SECURITY = blpapi.Name("security")
-    FIELD_DATA = blpapi.Name("fieldData")
-    FIELD_EXCEPTIONS = blpapi.Name("fieldExceptions")
-    FIELD_ID = blpapi.Name("fieldId")
-    ERROR_INFO = blpapi.Name("errorInfo")
-
-    securityDataArray = msg.getElement(SECURITY_DATA)
-    for securityData in securityDataArray.values():
-        print(securityData.getElementAsString(SECURITY))
-        fieldData = securityData.getElement(FIELD_DATA)
-        for field in fieldData.elements():
-            for i, row in enumerate(field.values()):
-                for j in range(row.numElements()):
-                    e = row.getElement(j)
-                    print("Row %d col %d: %s %s" % (i, j, e.name(), e.getValue()))
