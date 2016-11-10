@@ -13,6 +13,11 @@ class TestPybbg(unittest.TestCase):
         data = tester.bds('EDA Comdty', 'OPT_FUTURES_CHAIN_DATES')
         print(data) 
 
+    def test_bds_override(self):
+        tester = pybbg.Pybbg()
+        data = tester.bds('EDA Comdty', 'FUT_CHAIN_LAST_TRADE_DATES', overrides={'INCLUDE_EXPIRED_CONTRACTS': 'Y'})
+        print(data) 
+
     def test_bdh(self):
         tester = pybbg.Pybbg()
         data = tester.bdh(['AMZN US Equity', 'IBM US Equity'], ['PX_LAST', 'PX_BID', 'PX_ASK'], datetime.datetime.today() + datetime.timedelta(days=-10), datetime.datetime.today())
