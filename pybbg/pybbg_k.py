@@ -205,7 +205,7 @@ class Pybbg():
         return pd.DataFrame.from_dict(data)
 
 
-    def bds(self, security, field):
+    def bds(self, security, field, overrides = None):
 
         self.service_refData()
         
@@ -219,7 +219,16 @@ class Pybbg():
         
         fields = request.getElement("fields")
         fields.appendValue(field)
+
+        if overrides is not None:
+            overrideOuter = request.getElement('overrides')
+            for k in overrides:
+                override1 = overrideOuter.appendElement()
+                override1.setElement('fieldId', k) 
+                override1.setElement('value', overrides[k])
+
         
+        print(request)
         self.session.sendRequest(request)
         data = dict()
 
