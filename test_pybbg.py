@@ -13,6 +13,11 @@ class TestPybbg(unittest.TestCase):
         data = tester.bds('EDA Comdty', 'OPT_FUTURES_CHAIN_DATES')
         print(data) 
 
+    def test_bds_col_access(self):
+        tester = pybbg.Pybbg()
+        data = tester.bds('MSFT US Equity', 'DVD_HIST_ALL')
+        print(data['Declared Date'])
+
     def test_bds_override(self):
         tester = pybbg.Pybbg()
         data = tester.bds('EDA Comdty', 'FUT_CHAIN_LAST_TRADE_DATES', overrides={'INCLUDE_EXPIRED_CONTRACTS': 'Y'})
