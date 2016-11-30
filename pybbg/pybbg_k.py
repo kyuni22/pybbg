@@ -228,7 +228,7 @@ class Pybbg():
                 override1.setElement('value', overrides[k])
 
         
-        print(request)
+        # print(request)
         self.session.sendRequest(request)
         data = dict()
 
@@ -243,7 +243,7 @@ class Pybbg():
                     for i, row in enumerate(fieldData.values()):
                         for j in range(row.numElements()):
                             e = row.getElement(j)
-                            k = e.name()
+                            k = str(e.name())
                             v = e.getValue()
                             if k not in data:
                                 data[k] = list()
