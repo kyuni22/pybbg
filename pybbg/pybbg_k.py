@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Edited on 18/01/2017 hr
+Edited on 18/01/2017 
 
 """
 
