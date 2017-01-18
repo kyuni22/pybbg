@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan 30 13:47:12 2014
+Edited on 18/01/2017 hr
 
-@author: kian
 """
 
 from __future__ import print_function
@@ -14,6 +13,7 @@ import pandas as pd
 import numpy as np
 import sys
 from pprint import pprint
+
 
 class Pybbg():
     def __init__(self, host='localhost', port=8194):
@@ -157,8 +157,9 @@ class Pybbg():
         data.index = pd.to_datetime(data.index)
         return data
 
-    def bdp(self, ticker, fld_list):
 
+    def bdp(self, ticker, fld_list, overrides=None):
+        # print(ticker, fld_list, overrides)
         self.service_refData()
         
         request = self.refDataService.createRequest("ReferenceDataRequest")
@@ -176,6 +177,13 @@ class Pybbg():
         for f in fld_list:
             fields.appendValue(f)
         
+        if overrides is not None:
+            overrideOuter = request.getElement('overrides')
+            for k in overrides:
+                override1 = overrideOuter.appendElement()
+                override1.setElement('fieldId', k) 
+                override1.setElement('value', overrides[k])
+
 
         self.session.sendRequest(request)
         data = dict()
@@ -203,6 +211,54 @@ class Pybbg():
                 break
 
         return pd.DataFrame.from_dict(data)
+
+
+    # def bdp(self, ticker, fld_list):
+
+    #     self.service_refData()
+        
+    #     request = self.refDataService.createRequest("ReferenceDataRequest")
+    #     if isstring(ticker):
+    #         ticker = [ ticker ]
+
+    #     securities = request.getElement("securities")
+    #     for t in ticker:
+    #         securities.appendValue(t)
+        
+    #     if isstring(fld_list):
+    #         fld_list = [ fld_list ]
+
+    #     fields = request.getElement("fields")
+    #     for f in fld_list:
+    #         fields.appendValue(f)
+        
+
+    #     self.session.sendRequest(request)
+    #     data = dict()
+
+    #     while(True):
+    #         # We provide timeout to give the chance for Ctrl+C handling:
+    #         ev = self.session.nextEvent(500)
+    #         for msg in ev:
+    #             securityData = msg.getElement("securityData")
+
+    #             for i in range(securityData.numValues()):
+    #                 fieldData = securityData.getValue(i).getElement("fieldData")
+    #                 secId = securityData.getValue(i).getElement("security").getValue()
+    #                 data[secId] = dict()
+    #                 for field in fld_list:
+    #                     if fieldData.hasElement(field):
+    #                         data[secId][field] = fieldData.getElement(field).getValue()
+    #                     else:
+    #                         data[secId][field] = np.NaN
+                        
+
+        
+    #         if ev.eventType() == blpapi.Event.RESPONSE:
+    #             # Response completly received, so we could exit
+    #             break
+
+    #     return pd.DataFrame.from_dict(data)
 
 
     def bds(self, security, field, overrides = None):
