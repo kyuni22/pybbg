@@ -13,7 +13,7 @@ Install via pip
 
 This package is not yet on pypi manual global install is as follows:
 
-    pip install git+https://github.com/kyuni22/pybbg 
+    pip install git+https://github.com/hubertrogers/pybbg 
 
 Functions available
 =====
@@ -30,6 +30,7 @@ New Functions bds and bdp
 	* tickers - one string or a list of strings
 	* fields - one field or a list of fields
 	* returns a table where columns are tickers and rows are fields, cell values are values
+	* now with overrides
 * bds(ticker, field) - similar to excel BDS
 	* ticker - one ticker at a time
 	* field - one "bulk data" field at a time
