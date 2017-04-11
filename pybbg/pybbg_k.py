@@ -98,7 +98,7 @@ class Pybbg():
         self.session.sendRequest(request)
         # defaultdict - later convert to pandas
         data = defaultdict(dict)
-        warnings.warn(data)
+        warnings.warn(str(data))
         # Process received events
         while (True):
             # We provide timeout to give the chance for Ctrl+C handling:
