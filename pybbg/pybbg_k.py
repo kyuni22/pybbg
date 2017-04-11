@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Edited on 18/01/2017 
+Edited on 18/01/2017
 
 """
 
@@ -56,7 +56,7 @@ class Pybbg():
 
         self.initialized_services.add('//blp/refdata')
 
-    def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection='DAILY'):
+    def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection='DAILY', overrides=None):
         """
         Get ticker_list and field_list
         return pandas multi level columns dataframe
@@ -83,6 +83,14 @@ class Pybbg():
         request.set("periodicitySelection", periodselection)
         request.set("startDate", start_date)
         request.set("endDate", end_date)
+
+
+        if overrides is not None:
+            overrideOuter = request.getElement('overrides')
+            for k in overrides:
+                override1 = overrideOuter.appendElement()
+                override1.setElement('fieldId', k)
+                override1.setElement('value', overrides[k])
 
         # print("Sending Request:", request)
         # Send the request
