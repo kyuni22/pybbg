@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Edited on 18/01/2017 
+Edited on 18/01/2017
 
 """
 
@@ -13,6 +13,7 @@ import pandas as pd
 import numpy as np
 import sys
 from pprint import pprint
+import warnings
 
 
 class Pybbg():
@@ -56,7 +57,7 @@ class Pybbg():
 
         self.initialized_services.add('//blp/refdata')
 
-    def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection='DAILY'):
+    def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection='DAILY', overrides=None):
         """
         Get ticker_list and field_list
         return pandas multi level columns dataframe
@@ -84,11 +85,20 @@ class Pybbg():
         request.set("startDate", start_date)
         request.set("endDate", end_date)
 
+
+        if overrides is not None:
+            overrideOuter = request.getElement('overrides')
+            for k in overrides:
+                override1 = overrideOuter.appendElement()
+                override1.setElement('fieldId', k)
+                override1.setElement('value', overrides[k])
+
         # print("Sending Request:", request)
         # Send the request
         self.session.sendRequest(request)
         # defaultdict - later convert to pandas
         data = defaultdict(dict)
+        warnings.warn(str(data))
         # Process received events
         while (True):
             # We provide timeout to give the chance for Ctrl+C handling:
