@@ -14,7 +14,8 @@ import numpy as np
 import sys
 from pprint import pprint
 import warnings
-
+import six
+from dateutil.relativedelta import relativedelta
 
 class Pybbg():
     def __init__(self, host='localhost', port=8194):
@@ -57,7 +58,7 @@ class Pybbg():
 
         self.initialized_services.add('//blp/refdata')
 
-    def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection='DAILY', overrides=None):
+    def bdh(self, ticker_list, fld_list, start_date, end_date=date.today().strftime('%Y%m%d'), periodselection='DAILY', overrides=None, other_request_parameters=None, move_dates_to_period_end=False):
         """
         Get ticker_list and field_list
         return pandas multi level columns dataframe
@@ -80,7 +81,6 @@ class Pybbg():
             request.getElement("securities").appendValue(t)
         for f in fld_list:
             request.getElement("fields").appendValue(f)
-        request.set("periodicityAdjustment", "ACTUAL")
         request.set("periodicitySelection", periodselection)
         request.set("startDate", start_date)
         request.set("endDate", end_date)
@@ -92,6 +92,19 @@ class Pybbg():
                 override1 = overrideOuter.appendElement()
                 override1.setElement('fieldId', k)
                 override1.setElement('value', overrides[k])
+
+        if other_request_parameters is not None:
+            for k,v in six.iteritems(other_request_parameters):
+                request.set(k, v)
+
+        def adjust_date(to_adjust):
+            if periodselection == 'MONTHLY':
+                # always make the date the last day of the month
+                return date(to_adjust.year, to_adjust.month, 1) + relativedelta(months=1) - relativedelta(days=1)
+            if periodselection == 'WEEKLY':
+                return to_adjust + relativedelta(weekday=4)
+
+            return to_adjust
 
         # print("Sending Request:", request)
         # Send the request
@@ -108,9 +121,11 @@ class Pybbg():
                 fieldData = msg.getElement('securityData').getElement('fieldData')
                 for i in range(fieldData.numValues()):
                     for j in range(1, fieldData.getValue(i).numElements()):
-                        data[(ticker, fld_list[j - 1])][
-                            fieldData.getValue(i).getElement(0).getValue()] = fieldData.getValue(i).getElement(
-                            j).getValue()
+                        dt = fieldData.getValue(i).getElement(0).getValue()
+                        if move_dates_to_period_end:
+                            dt = adjust_date(dt)
+
+                        data[(ticker, fld_list[j - 1])][dt] = fieldData.getValue(i).getElement(j).getValue()
 
             if ev.eventType() == blpapi.Event.RESPONSE:
                 # Response completly received, so we could exit

@@ -26,6 +26,9 @@ New Functions bds and bdp
 		* if one field is used, the second index on the data frame is removed otherwise a multi-index data frame is used
 	* start/end date - end date defaults to today
 	* period selection - default to daily
+	* overrides - a dictionary, keys map to FLDS fields to overrides, values are the override values
+	* other_request_parameters - a dictionary, see `DOCS 2074429 <GO>` page 17 for key/value pairs that are valid here
+	* move_dates_to_period_end - boolean - if true forces WEEKLY to the friday of that week, forces MONTHLY to the last calendar day of that month.
 * bdp(tickers, fields) - similar to excel bdp
 	* tickers - one string or a list of strings
 	* fields - one field or a list of fields
