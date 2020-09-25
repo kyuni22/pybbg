@@ -237,6 +237,70 @@ class Pybbg():
 
         return pd.DataFrame.from_dict(data)
 
+    def beqs(self, screenname, screentype='Global', group='General',
+             language='ENGLISH', overrides=None):
+        """[summary]
+
+        Args:
+            screenname (str): The Name of the screen in EQS in the Terminal.
+            screentype (str, optional): 'Global' or 'Private'. Global for
+            Bloomberg public screen. Private for your user defined screens.
+            Defaults to 'Global'.
+            group (str, optional): Name of the folder in EQS where you saved
+            your screen or the Bloomberg public screen is located. Defaults to
+            'General'.
+            language (str, optional): 'Language of the Fields'. Defaults to
+            'ENGLISH'.
+            overrides (dict, optional): Overrides, see Bloomberg API docs.
+            Defaults to None.
+        """
+        self.service_refData()
+
+        request = self.refDataService.createRequest("BeqsRequest")
+
+        request.set('screenName', screenname)
+        request.set('screenType', screentype)
+        request.set('Group', group)
+        request.set('languageId', language)
+
+        if overrides is not None:
+            overrideOuter = request.getElement('overrides')
+            for k in overrides:
+                override1 = overrideOuter.appendElement()
+                override1.setElement('fieldId', k)
+                override1.setElement('value', overrides[k])
+
+        self.session.sendRequest(request)
+        data = dict()
+
+        while (True):
+            # We provide timeout to give the chance for Ctrl+C handling:
+            ev = self.session.nextEvent(500)
+            for msg in ev:
+                fielddisplay = msg.getElement('data').getElement('fieldDisplayUnits')
+                fld_list = []
+
+                for i in range(fielddisplay.numElements()):
+                    fld_list.append(str(fielddisplay.getElement(i).name()))
+
+                securityData = msg.getElement("data").getElement('securityData')
+
+                for i in range(securityData.numValues()):
+                    fieldData = securityData.getValue(i).getElement("fieldData")
+                    secId = securityData.getValue(i).getElement("security").getValue()
+                    data[secId] = dict()
+                    for field in fld_list:
+                        if fieldData.hasElement(field):
+                            data[secId][field] = fieldData.getElement(field).getValue()
+                        else:
+                            data[secId][field] = np.NaN
+
+            if ev.eventType() == blpapi.Event.RESPONSE:
+                # Response completly received, so we could exit
+                break
+
+        return pd.DataFrame.from_dict(data)
+
     # def bdp(self, ticker, fld_list):
 
     #     self.service_refData()
