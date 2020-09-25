@@ -242,17 +242,24 @@ class Pybbg():
         """[summary]
 
         Args:
+            
             screenname (str): The Name of the screen in EQS in the Terminal.
+            
             screentype (str, optional): 'Global' or 'Private'. Global for
             Bloomberg public screen. Private for your user defined screens.
             Defaults to 'Global'.
+
             group (str, optional): Name of the folder in EQS where you saved
-            your screen or the Bloomberg public screen is located. Defaults to
+            your screen or where the Bloomberg public screen is located. Defaults to
             'General'.
+
             language (str, optional): 'Language of the Fields'. Defaults to
             'ENGLISH'.
+
             overrides (dict, optional): Overrides, see Bloomberg API docs.
             Defaults to None.
+
+        Returns: A dataframe of the screen results.
         """
         self.service_refData()
 
