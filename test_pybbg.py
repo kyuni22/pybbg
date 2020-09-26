@@ -88,6 +88,11 @@ class TestPybbg(unittest.TestCase):
             move_dates_to_period_end=True
         ).iloc[::-1]
         print(data)
+    
+    def test_beqs(self):
+        tester = pybbg.Pybbg()
+        data = tester.beqs('test')
+        print(data)
 
 
 
