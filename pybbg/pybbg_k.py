@@ -237,7 +237,7 @@ class Pybbg():
 
         return pd.DataFrame.from_dict(data)
 
-    def beqs(self, screenname, screentype='Global', group='General',
+    def beqs(self, screenname, screentype='GLOBAL', group='General',
              language='ENGLISH', overrides=None):
         """[summary]
 
