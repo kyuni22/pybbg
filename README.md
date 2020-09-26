@@ -18,7 +18,7 @@ This package is not yet on pypi manual global install is as follows:
 Functions available
 =====
 
-New Functions bds and bdp 
+New Function beqs
 
 * bdh(tickers, fields, start date, end date, period selection) - similar interface with Bloomberg Excel API's bdh fucntion
 	* tickers - one ticker as a string or a list of strings 
@@ -39,8 +39,15 @@ New Functions bds and bdp
 	* field - one "bulk data" field at a time
 	* returns the bulk data table as seen in FLDS as a pandas data frame
 * bdib(ticker, field list, start date and time, end date and time, event type, interval) - get intraday bar data and convert to pandas
+* beqs(screen name, screen type, group, language)
+	* screen name - name of screen in EQS from inside terminal
+	* screen type - GLOBAL for bloomberg screens PRIVATE for your custom screens
+	* group - name of folder in EQS inside terminal where screen was saved
+	* language - desired language of the field names
+	* returns a dataframe of the results of the screen (limited to 3,000 rows or 2,999 securities)
+
 
 Examples
 =====
 * [bdh and bdib in IPython Notebook](http://nbviewer.ipython.org/github/kyuni22/pybbg/blob/master/BBG_API_test.ipynb?create=1)
-* [bdp bds bdh in python unittest](https://github.com/kyuni22/pybbg/blob/master/test_pybbg.py) 
+* [bdp bds bdh beqs in python unittest](https://github.com/kyuni22/pybbg/blob/master/test_pybbg.py) 
