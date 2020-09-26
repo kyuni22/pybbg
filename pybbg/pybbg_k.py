@@ -245,7 +245,7 @@ class Pybbg():
             
             screenname (str): The Name of the screen in EQS in the Terminal.
             
-            screentype (str, optional): 'Global' or 'Private'. Global for
+            screentype (str, optional): 'GLOBAL' or 'PRIVATE'. Global for
             Bloomberg public screen. Private for your user defined screens.
             Defaults to 'Global'.
 
