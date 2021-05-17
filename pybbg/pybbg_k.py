@@ -322,7 +322,10 @@ class Pybbg():
                         for j in range(row.numElements()):
                             e = row.getElement(j)
                             k = str(e.name())
-                            v = e.getValue()
+                            try:
+                                v = e.getValue()
+                            except blpapi.exception.IndexOutOfRangeException:
+                                v = np.NaN
                             if k not in data:
                                 data[k] = list()
 
